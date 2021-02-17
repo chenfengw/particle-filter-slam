@@ -1,0 +1,27 @@
+Map
+- center
+- size
+- update log odds
+- get occupancy grid
+
+Particle filter
+- predict
+    - use motion model
+- update
+
+Particles
+- orientation
+- location
+
+Transform
+- lidar_to_car
+- camera_to_car
+
+Sensors
+- fog,
+- camera
+- lidar
+- encoder 
+
+
+

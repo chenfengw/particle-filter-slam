@@ -36,7 +36,7 @@ def compute_stereo():
   ax3.imshow(disparity, cmap='gray')
   ax3.set_title('Disparity Map')
   plt.show()
-  input('Press ENTER to exit')
+  # input('Press ENTER to exit')
   
   
 
@@ -242,7 +242,7 @@ def test_mapCorrelation():
   plt.title("Correlation coefficient map")
 
   plt.show()
-  input('Press ENTER to exit')
+  # input('Press ENTER to exit')
   
   
 def show_lidar():
@@ -258,7 +258,7 @@ def show_lidar():
   ax.grid(True)
   ax.set_title("Lidar scan data", va='bottom')
   plt.show()
-  input('Press ENTER to exit')
+  # input('Press ENTER to exit')
 	
 
 if __name__ == '__main__':
