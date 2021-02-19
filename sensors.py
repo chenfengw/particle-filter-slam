@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
+import math
 from pr2_utils import read_data_from_csv
 
+
 class Sensor:
-    def __init__(self,path_to_data):
+    def __init__(self, path_to_data):
         self.data_path = path_to_data
         self.timestamp, self.data = read_data_from_csv(self.data_path)
         # update rate in second
@@ -18,66 +20,80 @@ class Sensor:
     def get_length(self):
         return len(self.timestamp)
 
+    def find_idx_at_time(self,given_time):
+        return self._find_nearest_idx(self.timestamp,given_time)
+
+    @staticmethod
+    def _find_nearest_idx(array,value):
+        idx = np.searchsorted(array, value, side="left")
+        if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+            return idx-1
+        else:
+            return idx
+
 class Gyroscope(Sensor):
-    def __init__(self,path_to_data):
+    def __init__(self, path_to_data):
         super().__init__(path_to_data)
-        self.delta_yaw = self.data[:,-1]
+        self.delta_yaw = self.data[:, -1]
         self.angular_velocity = self.get_angular_velocity()
- 
+
     def get_angular_velocity(self):
         return self.delta_yaw / self.delta_t
-    
+
 
 class Encoder(Sensor):
-    def __init__(self,path_to_data):
+    def __init__(self, path_to_data):
         super().__init__(path_to_data)
-        self.left_count = self.data[:,0] 
-        self.right_count = self.data[:,1] 
-        self.diameter = (0.623479 + 0.622806) /2
+        self.left_count = self.data[:, 0]
+        self.right_count = self.data[:, 1]
+        self.diameter = (0.623479 + 0.622806) / 2
         self.resolution = 4096
         self.meter_per_tick = np.pi * self.diameter / self.resolution
 
         # calculate speed for each wheel
         self.speed_l = self.get_linear_speed(self.left_count)
         self.speed_r = self.get_linear_speed(self.right_count)
-        self.linear_velocity = (self.speed_l + self.speed_l) / 2
+        self.linear_velocity = (self.speed_l + self.speed_r) / 2
         self.timestamp = self.timestamp[1:]
 
     def get_linear_speed(self, tick_counts):
         n_ticks = np.diff(tick_counts)
         return n_ticks * self.meter_per_tick / self.delta_t
 
-class Lidar(Sensor):
-    def __init__(self,path_to_data):
-        super().__init__(path_to_data)
 
-    def polar_to_xy(self, row_index, max_range=80, min_range=0.1):
+class Lidar(Sensor):
+    def __init__(self, path_to_data, max_range=80, min_range=0.1):
+        super().__init__(path_to_data)
+        self.max_range = max_range
+        self.min_range = min_range
+        self.angles = np.linspace(-5, 185, 286) / 180 * np.pi #286 rays in radians
+    
+    def polar_to_xy(self, row_index):
         """convert lidar data to xy coordinates in sensor frame
 
         Args:
             lidar_data (np array): entire lidar data array
             row_index (int): index of the row. Row represents timestamp
-            max_range (int, optional): max range of lidar. Defaults to 80.
-            min_range (float, optional): min range of lidar. Defaults to 0.1.
 
         Returns:
-            np array: 2 x n_samples, first row x, second row y
+            np array: 2 x n_samples, first row x, second row y. Cartesian coordinates
+            in sensor frame.
         """
-        angles = np.linspace(-5, 185, 286) / 180 * np.pi
         ranges = self.data[row_index, :]
-        
+
         # take valid indices
-        indValid = np.logical_and((ranges < max_range), (ranges > min_range))
+        indValid = np.logical_and((ranges < self.max_range), (ranges > self.min_range))
         ranges = ranges[indValid]
-        angles = angles[indValid]
+        angles = self.angles[indValid]
 
         # xy position in the sensor frame
         xs0 = ranges*np.cos(angles)
         ys0 = ranges*np.sin(angles)
-        
-        # convert position in the map frame here 
-        return np.stack((xs0,ys0))
+
+        # convert position in the map frame here
+        return np.stack((xs0, ys0))
+
 
 class StereoCamera(Sensor):
-    def __init__(self,path_to_data):
+    def __init__(self, path_to_data):
         super().__init__(path_to_data)
