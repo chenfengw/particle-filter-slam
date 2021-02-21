@@ -128,4 +128,32 @@ for i in range(2):
         y = np.random.normal()
         find_nearest(x,y)
 print(time.time() - now)
+# %% test lidar polar to xy
+lidar = all_sensors["lidar"]
 # %%
+lidar_test = lidar.polar_to_xy(0)
+# %%
+x = np.zeros([4,4])
+R = np.random.rand(3,3)
+p = np.ones(3).reshape(1,-1)
+# %%
+x[:3,:3] = R
+# %%
+x[:3,-1] = p
+# %%
+import transform
+importlib.reload(transform)
+# %%
+R = transform.Transform.get_rotation_matrix(np.pi/6)
+# %%
+p = np.random.rand(3)
+# %%
+tf = transform.Transform()
+T = transform.Transform.calcualte_pose(R,p)
+# %%
+particle = np.random.rand(3)
+
+# convert
+lidar_wold = tf.lidar_to_world(lidar_test,particle)
+# %% test bresenham2D
+

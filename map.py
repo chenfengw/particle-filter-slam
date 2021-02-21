@@ -1,6 +1,6 @@
 import numpy as np
 import pr2_utils 
-
+import matplotlib.pyplot as plt
 
 class Map:
     def __init__(self, res=0.1, x_range=[-50, 50], y_range=[-50, 50]):
@@ -11,7 +11,7 @@ class Map:
         self.ymax = y_range[1]
         self.sizex = int(np.ceil((self.xmax - self.xmin) / self.res + 1))
         self.sizey = int(np.ceil((self.ymax - self.ymin) / self.res + 1))
-        self.map = np.zeros([self.sizex, self.sizey], dtype=np.int8)
+        self.map = np.zeros([self.sizex, self.sizey])
 
         # calculation needed for map correlation
         # x_in_meter: x coordinates in m of all pixel(cell) in map
@@ -35,3 +35,6 @@ class Map:
 
     def get_map(self):
         return self.map
+
+    def show_map(self):
+        plt.imshow(self.map)

@@ -86,10 +86,11 @@ class Lidar(Sensor):
             row_index (int): index of the row. Row represents timestamp
 
         Returns:
-            np array: 2 x n_samples, first row x, second row y. Cartesian coordinates
-            in sensor frame.
+            np array: 4 x n_samples. in homogeneous coordinates. 
+            first row x, second row y. Cartesian coordinates in sensor frame.
         """
         ranges = self.data[row_index, :]
+        ranges[ranges==0] = self.max_range  # set 0 to max range
 
         # take valid indices
         indValid = np.logical_and((ranges < self.max_range), (ranges > self.min_range))
@@ -99,9 +100,10 @@ class Lidar(Sensor):
         # xy position in the sensor frame
         xs0 = ranges*np.cos(angles)
         ys0 = ranges*np.sin(angles)
+        ones = np.ones(len(xs0))
 
         # convert position in the map frame here
-        return np.stack((xs0, ys0))
+        return np.stack((xs0,ys0,ones,ones))
 
 
 class StereoCamera(Sensor):
