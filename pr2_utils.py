@@ -54,18 +54,21 @@ def read_data_from_csv(filename):
   timestamp = data_csv.values[:, 0]
   return timestamp, data
 
-
 def mapCorrelation(im, x_im, y_im, vp, xs, ys):
-  '''
-  INPUT 
-  im              the map 
-  x_im,y_im       physical x,y positions of the grid map cells
-  vp[0:2,:]       occupied x,y positions from range sensor (in physical unit)  
-  xs,ys           physical x,y,positions you want to evaluate "correlation" 
+  """Find the correlation between the laser scan and the map. Given world coordinates
+  of the lidar scan.
 
-  OUTPUT 
-  c               sum of the cell values of all the positions hit by range sensor
-  '''
+  Args:
+      im (np array): map, needs to be a square
+      x_im (np array): row vector, x coordinates (in meter) of all cell in map. len(x_im) == im.shape[0]
+      y_im (np array): row vector. y coordinates (in meter) of all cell in map. len(y_im) == im.shape[1]
+      vp (np array): lidar coordinates in world frame. shape: 2 x n_valid scan
+      xs (np array): row vector, x coordinates (in meter) of potential particle location
+      ys (np array): row vector, y coordinates (in meter) of potential  particle location
+
+  Returns:
+      np array: shape = len(xs) x len(ys)
+  """  
   nx = im.shape[0]
   ny = im.shape[1]
   xmin = x_im[0]

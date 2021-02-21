@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import time
 import pr2_utils as slam_utils
 import importlib
-
+from pr2_utils import *
 import sensors
 importlib.reload(sensors)
 # %%
@@ -15,50 +15,6 @@ all_sensors = {}
 all_sensors["gyro"] = sensors.Gyroscope('data/sensor_data/fog.csv')
 all_sensors["lidar"] = sensors.Lidar('data/sensor_data/lidar.csv')
 all_sensors["encoder"] = sensors.Encoder('data/sensor_data/encoder.csv')
-# %%
-for key, val in all_sensors.items():
-    print("{}, length is {}".format(key,val.get_length()))
-
-    plt.plot(val.get_time(),label = key)
-plt.legend()
-plt.xlabel("sample count")
-plt.ylabel("time stamp")
-plt.title("time vs sample count")
-plt.savefig("figs/time vs sample count.png",bbox_inches="tight")
-# %%
-plt.plot(all_sensors["encoder"].timestamp)
-plt.plot(all_sensors["lidar"].timestamp)
-# %%
-plt.plot((all_sensors["encoder"].timestamp[:115865] - all_sensors["lidar"].timestamp[:115865])/1e9)
-# %%
-
-# %% test ParticleFilter
-import particle_filter 
-importlib.reload(particle_filter)
-pf = particle_filter.ParticleFilter()
-gyro = all_sensors["gyro"] 
-encoder = all_sensors["encoder"]
-
-# %%
-def find_nearest_idx(array, value):
-    return np.abs(array - value).argmin()
-
-# %% test dead reconking
-traj_all = np.zeros([gyro.get_length(),3])
-
-for gyro_idx, (gyro_time, omega) in enumerate(zip(gyro.timestamp,gyro.angular_velocity)):
-    if gyro_idx == 0: 
-        continue
-
-    encoder_idx_match = find_nearest_idx(encoder.timestamp, gyro_time)
-    linear_v = encoder.linear_velocity[encoder_idx_match]
-    traj_all[gyro_idx] = pf.predict(traj_all[gyro_idx-1],linear_v,omega,gyro.delta_t)
-
-# %%
-x_all = [item[0] for item in traj_all]
-y_all = [item[1] for item in traj_all]
-plt.plot(x_all,y_all)
-
 # %% test mapCorrelation
 lidar_data = all_sensors["lidar"].get_data()
 angles = np.linspace(-5, 185, 286) / 180 * np.pi
@@ -73,9 +29,9 @@ angles = angles[indValid]
 MAP = {}
 MAP['res']   = 0.1 #meters
 MAP['xmin']  = -50  #meters
-MAP['ymin']  = -50
-MAP['xmax']  =  50
-MAP['ymax']  =  50 
+MAP['ymin']  = -50 # in meter
+MAP['xmax']  =  50 # in meter
+MAP['ymax']  =  50 # in meter
 MAP['sizex']  = int(np.ceil((MAP['xmax'] - MAP['xmin']) / MAP['res'] + 1)) #cells
 MAP['sizey']  = int(np.ceil((MAP['ymax'] - MAP['ymin']) / MAP['res'] + 1))
 MAP['map'] = np.zeros((MAP['sizex'],MAP['sizey']),dtype=np.int8) #DATA TYPE: char or int8
@@ -95,24 +51,29 @@ xis = np.ceil((xs0 - MAP['xmin']) / MAP['res'] ).astype(np.int16)-1
 yis = np.ceil((ys0 - MAP['ymin']) / MAP['res'] ).astype(np.int16)-1
 
 # build an arbitrary map 
+# indGood are index where laser scan hit
 indGood = np.logical_and(np.logical_and(np.logical_and((xis > 1), (yis > 1)), (xis < MAP['sizex'])), (yis < MAP['sizey']))
 MAP['map'][xis[indGood],yis[indGood]]=1
 
 # %%
+# x coordinates in m of all pixel(cell) in map
 x_im = np.arange(MAP['xmin'],MAP['xmax']+MAP['res'],MAP['res']) #x-positions of each pixel of the map
+# y coordinates in m of all pixel (cell)
 y_im = np.arange(MAP['ymin'],MAP['ymax']+MAP['res'],MAP['res']) #y-positions of each pixel of the map
 
-x_range = np.arange(-0.4,0.4+0.1,0.1)
+x_range = np.arange(-0.4,0.4+0.1,0.1) # in meter
 y_range = np.arange(-0.4,0.4+0.1,0.1)
 
-
-
+print("x_range length: {}, y_range length {}".format(len(x_range),len(y_range)))
+# %%
 print("Testing map_correlation with {}x{} cells".format(MAP['sizex'],MAP['sizey']))
 ts = tic()
-c = mapCorrelation(MAP['map'],x_im,y_im,Y,x_range,y_range)
+c = mapCorrelation(MAP['map'],x_im,y_im,Y,x_range,y_range) # Y is the laser xy coordinates
 print(c)
+print(c.shape)
 toc(ts,"Map Correlation")
 
+# %%
 c_ex = np.array([[ 4.,  6.,  6.,  5.,  8.,  6.,  3.,  2.,  0.],
                 [ 7.,  5., 11.,  8.,  5.,  8.,  5.,  4.,  2.],
                 [ 5.,  7., 11.,  8., 12.,  5.,  2.,  1.,  5.],
@@ -128,6 +89,7 @@ if np.sum(c==c_ex) == np.size(c_ex):
 else:
     print("...Test failed. Close figures to continue tests.")	
 
+# %%
 #plot original lidar points
 fig1 = plt.figure()
 plt.plot(xs0,ys0,'.k')
@@ -156,4 +118,14 @@ def find_nearest(array,value):
         return array[idx-1]
     else:
         return array[idx]
+# %%
+import time
+now = time.time()
+
+x = np.random.rand(11586500)
+for i in range(2):
+    for i in range(11586500):
+        y = np.random.normal()
+        find_nearest(x,y)
+print(time.time() - now)
 # %%

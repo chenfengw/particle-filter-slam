@@ -20,8 +20,18 @@ class Sensor:
     def get_length(self):
         return len(self.timestamp)
 
-    def find_idx_at_time(self,given_time):
-        return self._find_nearest_idx(self.timestamp,given_time)
+    def find_idx_at_time(self,given_time,idx_approx):
+        if idx_approx <= 500:
+            idx_begin = 0
+        else:
+            idx_begin = idx_approx - 500
+        idx_end = idx_begin + 500*2
+
+        if idx_end > self.get_length()-1:
+            idx_end = self.get_length() - 1
+        
+        array_temp = self.timestamp[idx_begin:idx_end]
+        return idx_begin + self._find_nearest_idx(array_temp,given_time)
 
     @staticmethod
     def _find_nearest_idx(array,value):
