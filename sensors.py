@@ -5,9 +5,14 @@ from pr2_utils import read_data_from_csv
 
 
 class Sensor:
-    def __init__(self, path_to_data):
+    def __init__(self, path_to_data, downsample_rate=10):
         self.data_path = path_to_data
         self.timestamp, self.data = read_data_from_csv(self.data_path)
+        
+        if downsample_rate is not None:
+            self.timestamp = self.timestamp[::downsample_rate]
+            self.data = self.data[::downsample_rate]
+
         # update rate in second
         self.delta_t = np.diff(self.timestamp).mean() / 1e9
 
@@ -42,8 +47,8 @@ class Sensor:
             return idx
 
 class Gyroscope(Sensor):
-    def __init__(self, path_to_data):
-        super().__init__(path_to_data)
+    def __init__(self, path_to_data, downsample_rate=10):
+        super().__init__(path_to_data, downsample_rate)
         self.delta_yaw = self.data[:, -1]
         self.angular_velocity = self.get_angular_velocity()
 
@@ -52,8 +57,8 @@ class Gyroscope(Sensor):
 
 
 class Encoder(Sensor):
-    def __init__(self, path_to_data):
-        super().__init__(path_to_data)
+    def __init__(self, path_to_data, downsample_rate=10):
+        super().__init__(path_to_data, downsample_rate)
         self.left_count = self.data[:, 0]
         self.right_count = self.data[:, 1]
         self.diameter = (0.623479 + 0.622806) / 2
@@ -72,8 +77,8 @@ class Encoder(Sensor):
 
 
 class Lidar(Sensor):
-    def __init__(self, path_to_data, max_range=80, min_range=0.1):
-        super().__init__(path_to_data)
+    def __init__(self, path_to_data, max_range=80, min_range=0.1, downsample_rate=10):
+        super().__init__(path_to_data, downsample_rate)
         self.max_range = max_range
         self.min_range = min_range
         self.angles = np.linspace(-5, 185, 286) / 180 * np.pi #286 rays in radians
@@ -90,7 +95,7 @@ class Lidar(Sensor):
             first row x, second row y. Cartesian coordinates in sensor frame.
         """
         ranges = self.data[row_index, :]
-        ranges[ranges==0] = self.max_range  # set 0 to max range
+        # ranges[ranges==0] = self.max_range  # set 0 to max range
 
         # take valid indices
         indValid = np.logical_and((ranges < self.max_range), (ranges > self.min_range))

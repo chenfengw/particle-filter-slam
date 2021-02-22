@@ -156,4 +156,43 @@ particle = np.random.rand(3)
 # convert
 lidar_wold = tf.lidar_to_world(lidar_test,particle)
 # %% test bresenham2D
+import time
+sx = 0
+sy = 1
+print("Testing bresenham2D...")
+r1 = bresenham2D(sx, sy, 10, 5)
+r1_ex = np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10],[1,1,2,2,3,3,3,4,4,5,5]])
+r2 = bresenham2D(sx, sy, 9, 6)
+r2_ex = np.array([[0,1,2,3,4,5,6,7,8,9],[1,2,2,3,3,4,4,5,5,6]])	
+if np.logical_and(np.sum(r1 == r1_ex) == np.size(r1_ex),np.sum(r2 == r2_ex) == np.size(r2_ex)):
+    print("...Test passed.")
+else:
+    print("...Test failed.")
 
+# Timing for 1000 random rays
+num_rep = 1000
+start_time = time.time()
+for i in range(0,num_rep):
+    x,y = bresenham2D(sx, sy, 500, 200)
+print("1000 raytraces: --- %s seconds ---" % (time.time() - start_time))
+
+# %%
+import map
+importlib.reload(map)
+test_map = map.Map(res=1, x_range=[-2,2],y_range=[-3,3])
+# %%
+meter = np.array([[2.2, -1.3],
+                [-1.2, -2.2],
+                [-2.4,2.1]]).T
+
+x1 = test_map.meter_to_cell(meter)
+x2 = test_map.cell_to_index(x1[0],x1[1])
+# %% test line draw
+from skimage.draw import line
+img = np.zeros((10, 10), dtype=np.uint8)
+rr, cc = line(1, 4, 8, 8)
+img[rr, cc] = 1
+
+# %%
+r1 = bresenham2D(1, 4, 8, 8)
+# %%
