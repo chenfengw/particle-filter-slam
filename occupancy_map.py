@@ -1,5 +1,5 @@
 import numpy as np
-import pr2_utils 
+from pr2_utils import mapCorrelation
 import matplotlib.pyplot as plt
 
 class Map:
@@ -30,12 +30,12 @@ class Map:
         self.set_scan_area()
 
     def map_correlation(self, lidar_scan):
-        return pr2_utils.mapCorrelation(self.map, 
-                                        self.x_in_meter, 
-                                        self.y_in_meter, 
-                                        lidar_scan, 
-                                        self.scan_x_range, 
-                                        self.scan_y_range)
+        return mapCorrelation(self.map, 
+                              self.x_in_meter, 
+                              self.y_in_meter, 
+                              lidar_scan, 
+                              self.scan_x_range, 
+                              self.scan_y_range)
 
     def set_scan_area(self, depth=4):
         """update scan area during map correlation
