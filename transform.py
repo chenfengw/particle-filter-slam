@@ -32,8 +32,8 @@ class Transform():
 
     @staticmethod
     def calcualte_pose(R,p):
-        assert R.shape == (3,3), "R must be 3x3"
-        assert len(p) == 3, "p must be row vector of len 3"
+        # assert R.shape == (3,3), "R must be 3x3"
+        # assert len(p) == 3, "p must be row vector of len 3"
         T = np.zeros([4,4])
         T[:3,:3] = R
         T[:3,-1] = p

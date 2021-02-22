@@ -20,9 +20,9 @@ class ParticleFilter:
 
         # use motion model
         theta = self.particles[-1,:]
-        return self.particles + t * np.vstack([lienar_v_noisy * np.cos(theta),
-                                              lienar_v_noisy * np.sin(theta),
-                                              self.ones * angular_v_noisy])
+        self.particles += t * np.vstack([lienar_v_noisy * np.cos(theta),
+                                         lienar_v_noisy * np.sin(theta),
+                                         self.ones * angular_v_noisy])
 
     def predict(self, x, v, omega, t):
         """Use motion model to predict robot pose

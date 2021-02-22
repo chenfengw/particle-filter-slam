@@ -5,11 +5,11 @@ from pr2_utils import read_data_from_csv
 
 
 class Sensor:
-    def __init__(self, path_to_data, downsample_rate=10):
+    def __init__(self, path_to_data, downsample_rate=None):
         self.data_path = path_to_data
         self.timestamp, self.data = read_data_from_csv(self.data_path)
         
-        if downsample_rate is not None:
+        if downsample_rate is not None and downsample_rate > 1:
             self.timestamp = self.timestamp[::downsample_rate]
             self.data = self.data[::downsample_rate]
 
@@ -47,7 +47,7 @@ class Sensor:
             return idx
 
 class Gyroscope(Sensor):
-    def __init__(self, path_to_data, downsample_rate=10):
+    def __init__(self, path_to_data, downsample_rate=None):
         super().__init__(path_to_data, downsample_rate)
         self.delta_yaw = self.data[:, -1]
         self.angular_velocity = self.get_angular_velocity()
@@ -57,7 +57,7 @@ class Gyroscope(Sensor):
 
 
 class Encoder(Sensor):
-    def __init__(self, path_to_data, downsample_rate=10):
+    def __init__(self, path_to_data, downsample_rate=None):
         super().__init__(path_to_data, downsample_rate)
         self.left_count = self.data[:, 0]
         self.right_count = self.data[:, 1]
@@ -77,7 +77,7 @@ class Encoder(Sensor):
 
 
 class Lidar(Sensor):
-    def __init__(self, path_to_data, max_range=80, min_range=0.1, downsample_rate=10):
+    def __init__(self, path_to_data, max_range=80, min_range=0.1, downsample_rate=None):
         super().__init__(path_to_data, downsample_rate)
         self.max_range = max_range
         self.min_range = min_range
