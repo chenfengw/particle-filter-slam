@@ -27,10 +27,10 @@ class Map:
         self.y_in_meter = np.arange(self.ymin, self.ymax+self.res, self.res)
 
         # search space for map correlation
-        self.set_scan_area()
+        self.set_scan_area(depth=4)
 
     def map_correlation(self, lidar_scan):
-        return mapCorrelation(self.map, 
+        return mapCorrelation(self.map > 0, 
                               self.x_in_meter, 
                               self.y_in_meter, 
                               lidar_scan, 

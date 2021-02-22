@@ -1,20 +1,26 @@
 import numpy as np
 
 class ParticleFilter:
-    def __init__(self, n_particles=25, threshold=0.2):
+    def __init__(self, n_particles=25, threshold=0.2, add_noise=False):
         self.n_particles = n_particles
         self.n_thresh = int(self.n_particles * threshold)
         self.particles = np.zeros([3, self.n_particles])
         self.alphas = np.ones(self.n_particles) * (1/self.n_particles)
         self.ones = np.ones_like(self.alphas)
+        self.add_noise = add_noise
 
     def predict_all(self, lienar_v, angular_v, t, sigma_linear=0.5, sigma_angular=0.5):
         # add noise
-        lienar_v_noisy = lienar_v + np.random.normal(0, sigma_linear)
-        angular_v_noisy = angular_v + np.random.normal(0, sigma_angular)
+        if self.add_noise:
+            lienar_v_noisy = lienar_v + np.random.normal(0, sigma_linear)
+            angular_v_noisy = angular_v + np.random.normal(0, sigma_angular)
+        else:
+            lienar_v_noisy = lienar_v
+            angular_v_noisy = angular_v
+
         # use motion model
         theta = self.particles[-1,:]
-        return self.particles + t * np.stack([lienar_v_noisy * np.cos(theta),
+        return self.particles + t * np.vstack([lienar_v_noisy * np.cos(theta),
                                               lienar_v_noisy * np.sin(theta),
                                               self.ones * angular_v_noisy])
 
@@ -54,7 +60,7 @@ class ParticleFilter:
         
         self.alphas = self.soft_max(alpha_new)
         max_idx = self.alphas.argmax()
-        return correlations[max_idx]
+        return max_idx, correlations[max_idx]
 
     def resampling(self):
         n_eff = 1 / np.linalg.norm(self.alphas)**2
