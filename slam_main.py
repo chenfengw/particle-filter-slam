@@ -24,14 +24,8 @@ lidar = sensors.Lidar('data/sensor_data/lidar.csv',downsample_rate=1)
 gyro = sensors.Gyroscope('data/sensor_data/fog.csv',downsample_rate=1)
 encoder = sensors.Encoder('data/sensor_data/encoder.csv',downsample_rate=1)
 
-# %% test timestamp
-plt.figure()
-plt.plot(lidar.timestamp)
-plt.plot(gyro.timestamp)
-plt.plot(encoder.timestamp)
 # %% initialization
 myMap = Map(res=1,x_range=[-1300,1300],y_range=[-1200,1200])
-# myMap = Map(res=1,x_range=[-150,150],y_range=[-150,150])
 tf = Transform()
 
 # %% Main Loop
@@ -98,4 +92,5 @@ car_trajactory = np.hstack((origin, car_trajactory))
 plt.scatter(car_trajactory[0][::1000],car_trajactory[1][::1000])
 # plt.savefig("dead_reconking.png",bbox_inches="tight")
 # %%
+plt.figure()
 myMap.show_map()
