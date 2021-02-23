@@ -11,6 +11,8 @@ class Map:
         self.ymax = y_range[1]
         assert self.xmin < self.xmax
         assert self.ymin < self.ymax
+
+        # get size in pixel
         self._sizex = int(np.ceil((self.xmax - self.xmin) / self.res + 1))
         self._sizey = int(np.ceil((self.ymax - self.ymin) / self.res + 1))
         assert self._sizex % 2 == 1
@@ -29,6 +31,8 @@ class Map:
         # search space for map correlation
         self.set_scan_area(depth=4)
 
+        # map for display
+        self.map_rendered = None
     def map_correlation(self, lidar_scan):
         return mapCorrelation(self.map > 0, 
                               self.x_in_meter, 
@@ -68,12 +72,14 @@ class Map:
             # free cells
             x_free = x_cell[:-1]
             y_free = y_cell[:-1]
-            self.map[x_free,y_free] -= np.log(odds_ratio)
+            valid1 = self.get_valid_indexes(x_free, y_free)
+            self.map[x_free[valid1], y_free[valid1]] -= np.log(odds_ratio)
 
             # occupied cell
             x_occupied = x_cell[-1]
             y_occupied = y_cell[-1]
-            self.map[x_occupied,y_occupied] += np.log(odds_ratio)
+            valid2 = self.get_valid_indexes(x_occupied,y_occupied)
+            self.map[x_occupied[valid2], y_occupied[valid2]] += np.log(odds_ratio)
 
     def get_map(self):
         return self.map
@@ -81,5 +87,14 @@ class Map:
     def get_shape(self):
         return self.map.shape
 
+    def get_valid_indexes(self, cellx_idx, celly_idx):
+        # get valid indexes for map
+        return np.logical_and(np.logical_and(cellx_idx >=0, cellx_idx < self._sizex),
+			                  np.logical_and(celly_idx >=0, celly_idx < self._sizey))
+
     def show_map(self):
-        plt.imshow(self.map, cmap="gray")
+        if self.map_rendered is None:
+            self.map_rendered = (self.map.T < 0).astype(float) # switch x and y
+            self.map_rendered = np.flip(self.map_rendered,axis=0) # flip y axis
+            self.map_rendered[self.map_rendered == 0] = 0.75     # set 0 to gray
+        plt.imshow(self.map_rendered,cmap="gray",vmin=0, vmax=1)
