@@ -1,9 +1,10 @@
 # ignroe data
 data/
+data_processed/
 *pdf
 *.DS_Store
 *.vscode
-*npy
+*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
