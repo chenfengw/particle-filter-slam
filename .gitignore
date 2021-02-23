@@ -5,6 +5,7 @@ data_processed/
 *.DS_Store
 *.vscode
 *.npy
+# design.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
