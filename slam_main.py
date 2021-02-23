@@ -37,6 +37,7 @@ car_trajactory = np.zeros([2,gyro_range])
 # initialize index
 encoder_idx = 0
 update_count = 0
+max_idx = min(encoder.get_length()-1, lidar.get_length()-1)
 update_now = False
 
 for gyro_idx in tqdm_notebook(range(gyro_range)):
@@ -47,7 +48,7 @@ for gyro_idx in tqdm_notebook(range(gyro_range)):
     encoder_time = encoder.timestamp[encoder_idx]
 
     # match timestamp
-    if gyro_time > encoder_time and encoder_idx < encoder.get_length()-1:
+    if gyro_time > encoder_time and encoder_idx < max_idx:
         encoder_idx += 1
         update_now = True
     
@@ -94,3 +95,14 @@ plt.scatter(car_trajactory[0][::1000],car_trajactory[1][::1000])
 # %%
 plt.figure()
 myMap.show_map()
+
+# %% save map data
+np.save("map_log_odds.npy",myMap.map)
+# %%
+np.save("map_display.npy",map2.map_rendered)
+# %% save car_trajactory
+np.save("car_trajactory.npy",car_trajactory)
+
+# %%
+np.save("car_trajactory_downsampled1000.npy",car_trajactory[:,::1000])
+# %%
