@@ -92,9 +92,19 @@ class Map:
         return np.logical_and(np.logical_and(cellx_idx >=0, cellx_idx < self._sizex),
 			                  np.logical_and(celly_idx >=0, celly_idx < self._sizey))
 
-    def show_map(self):
+    @staticmethod
+    def render_map(map_log_odds):
+        # set coloring
+        map_rendered = np.zeros_like(map_log_odds)
+        map_rendered[map_log_odds < 0] = 1 # set free cell to white
+        map_rendered[map_log_odds > 0] = 0 # set occupied cell to black
+        map_rendered[map_log_odds == 0] = 0.7 # set unexplored cell to gray
+
+        # transpose and flip map
+        map_rendered = np.flip(map_rendered.T,axis=0)
+        return map_rendered
+
+    def display_map(self):
         if self.map_rendered is None:
-            self.map_rendered = (self.map.T < 0).astype(float) # switch x and y
-            self.map_rendered = np.flip(self.map_rendered,axis=0) # flip y axis
-            self.map_rendered[self.map_rendered == 0] = 0.75     # set 0 to gray
+            self.map_rendered = self.render_map(self.map)
         plt.imshow(self.map_rendered,cmap="gray",vmin=0, vmax=1)

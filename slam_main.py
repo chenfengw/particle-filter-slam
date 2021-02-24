@@ -39,6 +39,8 @@ encoder_idx = 0
 update_count = 0
 max_idx = min(encoder.get_length()-1, lidar.get_length()-1)
 update_now = False
+map_progress = []
+traj_progress = []
 
 for gyro_idx in tqdm_notebook(range(gyro_range)):
     t_loop = time.time()
@@ -80,8 +82,10 @@ for gyro_idx in tqdm_notebook(range(gyro_range)):
         myMap.update_log_odds(scaned_cell)
         update_now = False
 
-    # if gyro_idx % 5000 == 0:
-    #     print("loop idx: {}, this loop took: {}".format(gyro_idx, time.time()- t_loop))
+    # save map in progess
+    if gyro_idx % 100000 == 0:
+        map_progress.append(np.copy(myMap.map))
+        traj_progress.append(np.copy(car_trajactory))
 
 # print final time
 print("total: {} loops, took {} min".format(gyro_idx, (time.time()- now)/60))
@@ -89,20 +93,18 @@ print("total: {} loops, took {} min".format(gyro_idx, (time.time()- now)/60))
 # append 0,0 to car_trajactory
 origin = np.zeros([2,1])
 car_trajactory = np.hstack((origin, car_trajactory))
+
+# save variables
+np.save("map_progress.npy",map_progress)
+np.save("traj_progress.npy",traj_progress)
 # %%
 plt.scatter(car_trajactory[0][::1000],car_trajactory[1][::1000])
-# plt.savefig("dead_reconking.png",bbox_inches="tight")
 # %%
 plt.figure()
-myMap.show_map()
+myMap.display_map()
 
-# %% save map data
-np.save("map_log_odds.npy",myMap.map)
+# %% test new map coloring
+map_logodds = np.load("data_processed/map_log_odds.npy")
 # %%
-np.save("map_display.npy",map2.map_rendered)
-# %% save car_trajactory
-np.save("car_trajactory.npy",car_trajactory)
-
-# %%
-np.save("car_trajactory_downsampled1000.npy",car_trajactory[:,::1000])
+map_new = Map().render_map(map_logodds)
 # %%
