@@ -5,6 +5,8 @@ data_processed/
 *.DS_Store
 *.vscode
 *.npy
+figs/
+report.md
 # design.txt
 
 # Byte-compiled / optimized / DLL files
