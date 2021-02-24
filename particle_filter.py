@@ -9,20 +9,20 @@ class ParticleFilter:
         self.ones = np.ones_like(self.alphas)
         self.add_noise = add_noise
 
-    def predict_all(self, lienar_v, angular_v, t, sigma_linear=0.5, sigma_angular=0.5):
+    def predict_all(self, lienar_v, angular_v, t, sigma_linear=0.0001, sigma_angular=0.0001):
         # add noise
         if self.add_noise:
-            lienar_v_noisy = lienar_v + np.random.normal(0, sigma_linear)
-            angular_v_noisy = angular_v + np.random.normal(0, sigma_angular)
+            lienar_v_noisy = lienar_v + np.random.normal(0, sigma_linear, self.n_particles)
+            angular_v_noisy = angular_v + np.random.normal(0, sigma_angular,self.n_particles)
         else:
             lienar_v_noisy = lienar_v
-            angular_v_noisy = angular_v
+            angular_v_noisy = angular_v * self.ones
 
         # use motion model
         theta = self.particles[-1,:]
         self.particles += t * np.vstack([lienar_v_noisy * np.cos(theta),
                                          lienar_v_noisy * np.sin(theta),
-                                         self.ones * angular_v_noisy])
+                                         angular_v_noisy])
 
     def predict(self, x, v, omega, t):
         """Use motion model to predict robot pose
@@ -42,7 +42,6 @@ class ParticleFilter:
 
     def update(self, lidar_scan, myMap, tf):
         # lidar scan is in sensor frame
-
         # new alpha
         alpha_new = np.zeros(self.n_particles)
         correlations = []
@@ -60,7 +59,8 @@ class ParticleFilter:
         
         self.alphas = self.soft_max(alpha_new)
         max_idx = self.alphas.argmax()
-        return max_idx, correlations[max_idx]
+
+        return self.particles[:,max_idx], correlations[max_idx]
 
     def resampling(self):
         n_eff = 1 / np.linalg.norm(self.alphas)**2

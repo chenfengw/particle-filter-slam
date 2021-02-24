@@ -57,7 +57,7 @@ f(\mathbf{y},\mathbf{m}) &= \sum_{y_i}\mathbf{1\{y_i = m_i\}} \\
 $$
 $f(\mathbf{y},\mathbf{m})$ is the laser correlation model. It takes lidar scan $\mathbf{y}$ in the world frame, the map $\mathbf{m}$, and produces a correlation number indicating how likely is $\mu$ being the true pose. To compute laser coronation, we first convert lidar scan from vehicle frame to world frame using particle pose $\mu$ then feed $\mathbf{y}$ and $\mathbf{m}$ into $f(\mathbf{y},\mathbf{m})$ to get laser correlation value for each particle. Finally we pass correlation values for all particles into softmax function to make sure  $\sum_{i=1}^{K}\alpha_{i} = 1$.
 
-### Mapping
+### Occupancy Grid Mapping
 
 In order to create a map, we employee occupancy grid mapping. The entire map is discretized into cells of fixed size. Each cell is in one of the three possible states: free, occupied, and unexplored. To update the map, we need to know where the car is. This information can be obtained by taking the particle associated with the largest weight as our best estimator of car's pose. Using this pose information, we can transform lidar scan from vehicle frame to world frame and use `skimage.draw.line` algorithm to determine cells that laser beams pass through. Laser beams pass through free space and terminate at obstacles, so we mark the cell at the end of the line to be occupied and the rest of the cells on the line to be free.  During each iteration, free cells are decremented by $\log4$, occupied cells are incremented by $\log4$, and unexplored cells remain unchanged.
 $$
@@ -67,21 +67,39 @@ $$
 - \log4 & \text{if cell is free} 
 \end{cases}
 $$
+### Texture Mapping
+
+
 
 ## Results
+### Occupancy Grid
+
+Below is the occupancy grid for every 100,000 loop.
+
+
+<img src="/Users/Charlie/Documents/Work_School/UCSD/Grad/Winter_2021/ECE276A/project/project2/figs/map_progress.svg" alt="map_progress" style="zoom:70%;" title="eee" />
+
+
+
+### Car Trajectory
+
+Below is the car trajectory for every 100,000 loop. Data is downsampled 100 times for display.
+
+<img src="/Users/Charlie/Documents/Work_School/UCSD/Grad/Winter_2021/ECE276A/project/project2/figs/trajactory_all.svg" alt="trajactory_all" style="zoom:70%;" />
+
+### Parameters
+| Name     | Value       |
+| :-------------: |:-------------:|
+| Map Resolution | 1 m / pixel |
+| Map Size | x: [-1300 m, 1300 m], y: [-1200 m, 1200 m] |
+|                |                                            |
+
+
 ### Conclusion
 
-Gaussian classifier worked incredibly well on pixel classification, achieving 100% accuracy on the validation set. We think high accuracy is the result of ample training samples. There are about 1000 images in each class, which enables the classifier to learn the complete distribution of colors. 
+Particle filter worked incredibly well for simultaneous localization and mapping, generated accurate car trajectory and highly detailed map for city street. Unfortunately our implementation is quite slow, 25 particles will take about 3hr to run. We think the speed can be dramatically improved if we use `cv2.findContours`  instead of `skimage.draw.line`. Since `findContours` can rasterize all rays at the same time whereas `skimage.draw.line` can only rasterize one ray at the time. By processing line rasterization in parallel, `findContours` can reduce number of `for` loop in the code and speed up the map update. 
 
-Meanwhile, the same classifier design also performs well when segmenting the reclining bin regions. For most of the training and testing image, classifier is able to successfully segment relying bins in the image. The addition of sky blue class helps to reduce false positive samples when sky is in the background. However, this also cause recycling bins whose color are the same as sky to be rejected. 
-
-After segmentation mask is produced, the proposed bounding box detection algorithm works well on the validation set, achieving 100% accuracies on all images. 
-
-
-
-
-
-
+In addition, we found speed can also be improved if we just use 1 particle instead of 25. Single particle only takes around 25min to run, and it actually yields surprisingly good results as all plots above are generated using single particle. We think this is due to highly accurate measurements from fiber optic gyro. In fact, FOG is regraded as state of the art gyroscope technology as it's extremely accurate and highly reliable. Therefore we conclude particle filter with high particle number is only beneficial when sensor data is noisy. If sensor data is very accurate, a small number of particles can produce efficient and accurate results. 
 
 
 
