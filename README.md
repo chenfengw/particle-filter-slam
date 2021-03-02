@@ -1,5 +1,5 @@
 # Particle Filter SLAM
-Simultaneous localization and mapping is the problem of localizing the robot and creating a map of the environment at the same time. This project contain code for particle filter SLAM algorithm. 
+Simultaneous localization and mapping (SLAM) is the problem of localizing the robot and creating a map of the environment at the same time. This project contains code for particle filter SLAM algorithm. 
 ## Requirements
 
 To install requirements:
