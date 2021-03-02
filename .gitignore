@@ -5,9 +5,11 @@ data_processed/
 *.DS_Store
 *.vscode
 *.npy
-figs/
+figs_all/
 report.md
-# design.txt
+design.txt
+test.py
+plot_map.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
