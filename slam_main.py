@@ -19,7 +19,7 @@ myMap = Map(res=1,x_range=[-1300,1300],y_range=[-1200,1200])
 tf = Transform()
 
 # %% Main Loop
-pf = ParticleFilter(n_particles=10, add_noise=True)
+pf = ParticleFilter(n_particles=1, add_noise=False)
 gyro_range = int(gyro.get_length() * 1)
 now = time.time()
 car_trajactory = np.zeros([2,gyro_range])
@@ -54,8 +54,8 @@ for gyro_idx in tqdm_notebook(range(gyro_range)):
         lidar_scan = lidar.polar_to_xy(encoder_idx)
 
         # update alpha, find max particle
-        max_particle, max_correlation = pf.update(lidar_scan, myMap, tf)
-        # max_particle = pf.particles[:,0]
+        # max_particle, max_correlation = pf.update(lidar_scan, myMap, tf)
+        max_particle = pf.particles[:,0]
         car_trajactory[:,update_count] = max_particle[:2]
 
         # use max particle to update update map
